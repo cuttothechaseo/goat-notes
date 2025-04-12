@@ -36,7 +36,6 @@ function AuthForm({ type }: Props) {
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         );
 
-        // Sign in on the client side
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,

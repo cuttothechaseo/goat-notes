@@ -66,7 +66,7 @@ function Header() {
               <Button variant="outline">Login</Button>
             </Link>
             <Link href="/signup">
-              <Button variant="outline">Sign Up</Button>
+              <Button variant="default">Sign Up</Button>
             </Link>
           </>
         )}

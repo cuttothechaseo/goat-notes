@@ -4,9 +4,10 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
+import { getUser } from "@/auth/server";
 
-function Header() {
-  const user = 1;
+async function Header() {
+  const user = await getUser();
   return (
     <header
       className="bg-popover relative flex h-24 w-full items-center justify-between px-3 sm:px-8"
@@ -24,7 +25,7 @@ function Header() {
           priority
         />
 
-        <h1 className="flex flex-col pb-1 text-2xl font-semibold leading-6">
+        <h1 className="flex flex-col pb-1 text-2xl leading-6 font-semibold">
           GOAT <span>Notes</span>
         </h1>
       </Link>
@@ -34,14 +35,12 @@ function Header() {
           <LogOutButton />
         ) : (
           <>
-            <Button asChild variant="outline">
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/signup" className="hidden sm:block">
-                Sign Up
-              </Link>
-            </Button>
+            <Link href="/login">
+              <Button variant="outline">Login</Button>
+            </Link>
+            <Link href="/signup" className="hidden sm:block">
+              <Button variant="outline">Sign Up</Button>
+            </Link>
           </>
         )}
         <ModeToggle />

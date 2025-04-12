@@ -8,7 +8,9 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-
+import { toast } from "sonner";
+import { loginAction, signUpAction } from "@/users";
+import { handleError } from "@/lib/utils";
 type Props = {
   type: "login" | "signup";
 };
@@ -22,7 +24,37 @@ function AuthForm({ type }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (formData: FormData) => {
-    console.log("form submitted");
+    startTransition(async () => {
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      let result;
+      let title;
+      let description;
+
+      if (isLoginForm) {
+        result = await loginAction(email, password);
+        title = "Login";
+        description = "You have been logged in successfully";
+      } else {
+        result = await signUpAction(email, password);
+        title = "Sign Up";
+        description = "Check your email for a confirmation link";
+      }
+
+      if (!result || !result.errorMessage) {
+        toast.success(title, {
+          description,
+        });
+        if (isLoginForm) {
+          router.replace("/");
+        }
+      } else {
+        toast.error(title, {
+          description: result.errorMessage || "An error occurred",
+        });
+      }
+    });
   };
 
   return (

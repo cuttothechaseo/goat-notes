@@ -10,17 +10,14 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { loginAction, signUpAction } from "@/users";
-import { handleError } from "@/lib/utils";
+
 type Props = {
   type: "login" | "signup";
 };
 
 function AuthForm({ type }: Props) {
   const isLoginForm = type === "login";
-
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (formData: FormData) => {
@@ -42,9 +39,9 @@ function AuthForm({ type }: Props) {
         description = "Check your email for a confirmation link";
       }
 
-      if (!result || !result.errorMessage) {
-        toast.success("Logged in", {
-          description: "You have been successfully logged in",
+      if (!result?.errorMessage) {
+        toast.success(title, {
+          description: description,
           duration: 3000,
         });
         if (isLoginForm) {
@@ -52,7 +49,7 @@ function AuthForm({ type }: Props) {
         }
       } else {
         toast.error(title, {
-          description: result.errorMessage || "An error occurred",
+          description: result.errorMessage,
         });
       }
     });

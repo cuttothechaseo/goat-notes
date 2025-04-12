@@ -5,24 +5,36 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 
 function LogOutButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   const handleLogout = async () => {
     setLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_ANON_KEY!,
+      );
 
-    const errorMessage = null;
+      const { error } = await supabase.auth.signOut();
 
-    if (!errorMessage) {
+      if (error) {
+        throw error;
+      }
+
       toast.success("Logged out successfully");
       router.push("/login");
-    } else {
-      toast.error(errorMessage);
+      router.refresh(); // Force a refresh to update the header state
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to log out");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

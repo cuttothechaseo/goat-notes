@@ -43,8 +43,9 @@ function AuthForm({ type }: Props) {
       }
 
       if (!result || !result.errorMessage) {
-        toast.success(title, {
-          description,
+        toast.success("Logged in", {
+          description: "You have been successfully logged in",
+          duration: 3000,
         });
         if (isLoginForm) {
           router.replace("/");

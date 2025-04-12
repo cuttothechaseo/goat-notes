@@ -38,7 +38,7 @@ async function Header() {
             <Link href="/login">
               <Button variant="outline">Login</Button>
             </Link>
-            <Link href="/signup" className="hidden sm:block">
+            <Link href="/signup">
               <Button variant="outline">Sign Up</Button>
             </Link>
           </>

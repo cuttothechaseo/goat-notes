@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { loginAction, signUpAction } from "@/users";
+import { createClient } from "@supabase/supabase-js";
 
 type Props = {
   type: "login" | "signup";
@@ -30,7 +31,23 @@ function AuthForm({ type }: Props) {
       let description;
 
       if (isLoginForm) {
-        result = await loginAction(email, password);
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+
+        // Sign in on the client side
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          result = { errorMessage: signInError.message };
+        } else {
+          result = { errorMessage: null };
+        }
+
         title = "Login";
         description = "You have been logged in successfully";
       } else {
@@ -46,6 +63,7 @@ function AuthForm({ type }: Props) {
         });
         if (isLoginForm) {
           router.replace("/");
+          router.refresh();
         }
       } else {
         toast.error(title, {

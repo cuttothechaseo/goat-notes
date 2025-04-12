@@ -16,8 +16,8 @@ function LogOutButton() {
 
     try {
       const supabase = createClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_ANON_KEY!,
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       );
 
       const { error } = await supabase.auth.signOut();
@@ -27,7 +27,7 @@ function LogOutButton() {
       }
 
       toast.success("Logged out successfully");
-      router.push("/login");
+      router.push("/");
       router.refresh(); // Force a refresh to update the header state
     } catch (error) {
       console.error(error);

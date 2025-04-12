@@ -1,13 +1,40 @@
+"use client";
+
 import { shadow } from "@/styles/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
-import { getUser } from "@/auth/server";
+import { createClient } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
 
-async function Header() {
-  const user = await getUser();
+function Header() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <header
       className="bg-popover relative flex h-24 w-full items-center justify-between px-3 sm:px-8"

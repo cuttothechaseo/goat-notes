@@ -8,9 +8,10 @@ import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 
 function Header() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const supabase = createClient(

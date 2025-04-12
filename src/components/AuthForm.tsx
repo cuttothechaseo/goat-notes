@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { CardContent, CardFooter } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -9,7 +9,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { loginAction, signUpAction } from "@/users";
+import { signUpAction } from "@/users";
 import { createClient } from "@supabase/supabase-js";
 
 type Props = {

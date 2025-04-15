@@ -6,19 +6,19 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
-function Header() {
-  const [user, setUser] = useState<User | null>(null);
+interface HeaderProps {
+  initialSession?: User | null;
+}
+
+function Header({ initialSession }: HeaderProps) {
+  const [user, setUser] = useState<User | null>(initialSession ?? null);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-
     // Check initial auth state
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -34,7 +34,7 @@ function Header() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <header

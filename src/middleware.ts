@@ -3,22 +3,35 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req: request, res })
+  try {
+    const res = NextResponse.next()
+    const supabase = createMiddlewareClient({ req: request, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    // Refresh session if it exists
+    await supabase.auth.getSession()
 
-  // If there's no session and the request is for the API, return 401
-  if (!session && request.nextUrl.pathname.startsWith('/api/')) {
-    return NextResponse.json(
-      { error: 'No active session found' },
-      { status: 401 }
-    )
+    // Refresh access token if it exists
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (session?.user) {
+      await supabase.auth.refreshSession()
+    }
+
+    // If there's no session and the request is for the API, return 401
+    if (!session && request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'No active session found' },
+        { status: 401 }
+      )
+    }
+
+    return res
+  } catch (error) {
+    console.error('Middleware error:', error)
+    return NextResponse.next()
   }
-
-  return res
 }
 
 export const config = {

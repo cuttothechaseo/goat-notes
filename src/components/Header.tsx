@@ -8,27 +8,27 @@ import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 
 interface HeaderProps {
-  initialSession?: User | null;
+  initialSession: Session | null;
 }
 
 function Header({ initialSession }: HeaderProps) {
-  const [user, setUser] = useState<User | null>(initialSession ?? null);
+  const [session, setSession] = useState<Session | null>(initialSession);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
     // Check initial auth state
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      setSession(session);
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      setSession(session);
     });
 
     return () => {
@@ -59,7 +59,7 @@ function Header({ initialSession }: HeaderProps) {
       </Link>
 
       <div className="flex gap-4">
-        {user ? (
+        {session?.user ? (
           <LogOutButton />
         ) : (
           <>

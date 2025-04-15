@@ -1,6 +1,6 @@
 "use client";
 
-import { Note } from "@prisma/client";
+import type { Note } from "@/types/prisma";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
@@ -46,7 +46,7 @@ function SidebarGroupContent({ notes, loading, isAuthenticated }: Props) {
           href={`/notes/${note.id}`}
           className="hover:bg-accent hover:text-accent-foreground block px-4 py-2 text-sm"
         >
-          {note.text}
+          {note.title}
         </Link>
       ))}
     </div>

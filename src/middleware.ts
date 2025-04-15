@@ -1,45 +1,72 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // If the cookie is updated, update the request and response
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          // If the cookie is removed, update the request and response
+          request.cookies.delete(name)
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.delete(name)
+        },
+      },
+    }
+  )
+
+  // Refresh session if it exists
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (session) {
+    await supabase.auth.refreshSession()
+  }
+
+  return response
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-}
-
-export async function updateSession(request: NextRequest) {
-  const supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  console.log("middleware ran")
-
-//   const supabase = createServerClient(
-//     process.env.SUPABASE_URL!,
-//     process.env.SUPABASE_ANON_KEY!,
-//     {
-//       cookies: {
-//         getAll() {
-//           return request.cookies.getAll()
-//         },
-//         setAll(cookiesToSet) {
-//           cookiesToSet.forEach(({ name, value,  }) => request.cookies.set(name, value))
-//           supabaseResponse = NextResponse.next({
-//             request,
-//           })
-//           cookiesToSet.forEach(({ name, value,  }) =>
-//             supabaseResponse.cookies.set(name, value, )
-//           )
-//         },
-//       },
-//     }
-//   )
-
-//   const {
-//     data: { user },
-//   } = await supabase.auth.getUser()
-
-  return supabaseResponse
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

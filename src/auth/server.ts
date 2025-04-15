@@ -2,42 +2,51 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
-  const cookieStore = await cookies()
-
-  const client = createServerClient(
+  const cookieStore = cookies()
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll().map(cookie => ({
+            name: cookie.name,
+            value: cookie.value,
+          }))
         },
-        setAll(cookiesToSet) {
+        set(name: string, value: string, options: { path: string }) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookieStore.set({ name, value, ...options })
           } catch (error) {
-            console.error('Error setting cookies:', error)
-            throw error // Re-throw the error to handle it properly
+            // Handle cookie errors in development
           }
         },
-      },
+        remove(name: string, options: { path: string }) {
+          try {
+            cookieStore.delete(name)
+          } catch (error) {
+            // Handle cookie errors in development
+          }
+        }
+      }
     }
   )
-
-  return client
 }
 
 export async function getUser() {
-  const client = await createClient()
-  const userObject = await client.auth.getUser()
-  
-  if (userObject.error) {
-    console.error(userObject.error)
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error) {
+      console.error('Error fetching user:', error.message)
+      return null
+    }
+
+    return user
+  } catch (error) {
+    console.error('Error in getUser:', error)
     return null
   }
-
-  return userObject.data.user
 }
    

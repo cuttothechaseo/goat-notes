@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./DarkModeToggle";
 import LogOutButton from "./LogOutButton";
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
@@ -14,7 +14,7 @@ function Header() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const supabase = createClient(
+    const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     );

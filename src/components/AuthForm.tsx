@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { signUpAction } from "@/users";
-import { createClient } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Props = {
   type: "login" | "signup";
@@ -20,6 +20,7 @@ function AuthForm({ type }: Props) {
   const isLoginForm = type === "login";
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const supabase = createClientComponentClient();
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
@@ -31,11 +32,6 @@ function AuthForm({ type }: Props) {
       let description;
 
       if (isLoginForm) {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        );
-
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,

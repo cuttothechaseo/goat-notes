@@ -1,13 +1,15 @@
 "use server"
 
-import { createClient } from "./auth/server"
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 import { handleError } from "./lib/utils"
 import { prisma } from "./db/prisma"
+
 export const loginAction = async (email: string, password: string) => {
     try {
-        const {auth} = await createClient()
+        const supabase = createRouteHandlerClient({ cookies })
 
-        const { error } = await auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
         })
@@ -35,9 +37,9 @@ export const loginAction = async (email: string, password: string) => {
 
 export const signUpAction = async (email: string, password: string) => {
     try {
-        const {auth} = await createClient()
+        const supabase = createRouteHandlerClient({ cookies })
 
-        const {data, error} = await auth.signUp({
+        const {data, error} = await supabase.auth.signUp({
             email,
             password,
         })

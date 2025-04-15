@@ -6,7 +6,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-import { Note } from "@prisma/client";
+import type { Note } from "@/types/prisma";
 import Link from "next/link";
 import SidebarGroupContent from "./SidebarGroupContent";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";

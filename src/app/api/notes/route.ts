@@ -8,12 +8,11 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (userError || !user) {
-      console.error('User error:', userError)
+    if (!user) {
       return NextResponse.json(
-        { error: 'Authentication error' },
+        { error: 'No user found' },
         { status: 401 }
       )
     }

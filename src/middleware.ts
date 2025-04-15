@@ -1,61 +1,24 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req: request, res })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is updated, update the request and response
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the request and response
-          request.cookies.delete(name)
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.delete(name)
-        },
-      },
-    }
-  )
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  // Refresh session if it exists
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (session) {
-    await supabase.auth.refreshSession()
+  // If there's no session and the request is for the API, return 401
+  if (!session && request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.json(
+      { error: 'No active session found' },
+      { status: 401 }
+    )
   }
 
-  return response
+  return res
 }
 
 export const config = {
@@ -65,8 +28,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

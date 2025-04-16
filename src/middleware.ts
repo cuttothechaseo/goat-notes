@@ -8,15 +8,15 @@ export async function middleware(request: NextRequest) {
     const supabase = createMiddlewareClient({ req: request, res })
 
     // Refresh session if it exists
-    await supabase.auth.getSession()
-
-    // Refresh access token if it exists
     const {
       data: { session },
     } = await supabase.auth.getSession()
 
     if (session?.user) {
-      await supabase.auth.refreshSession()
+      const { data: { session: refreshedSession } } = await supabase.auth.refreshSession()
+      if (!refreshedSession) {
+        await supabase.auth.signOut()
+      }
     }
 
     // If there's no session and the request is for the API, return 401
